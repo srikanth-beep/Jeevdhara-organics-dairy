@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Products - Jeeva Organics Dairy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .product-card {
+      transition: all 0.3s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-green-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <h1 class="text-3xl font-bold">జీవ</h1>
+        <div>
+          <p class="font-semibold text-lg">Jeeva Organics Dairy</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-6 text-sm">
+        <a href="dashboard.html" class="hover:text-green-200 flex items-center gap-1">
+          <i class="fas fa-home"></i> Home
+        </a>
+        <a href="products.html" class="text-green-200 font-medium flex items-center gap-1">
+          <i class="fas fa-shopping-bag"></i> Products
+        </a>
+        <a href="youcart.html" class="hover:text-green-200 flex items-center gap-1">
+          <i class="fas fa-cart-shopping"></i> Cart <span id="cartCount" class="bg-white text-green-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+        </a>
+        <a href="#" onclick="logout()" class="hover:text-red-300">
+          <i class="fas fa-sign-out-alt"></i>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold text-gray-800 mb-2">Our Fresh Dairy Products</h1>
+    <p class="text-gray-600 mb-8">100% Organic • Farm Fresh • Chemical Free</p>
+
+    <!-- Search and Filter -->
+    <div class="flex flex-col md:flex-row gap-4 mb-8">
+      <div class="flex-1">
+        <input 
+          type="text" 
+          id="searchInput"
+          placeholder="Search products... (Milk, Curd, Ghee...)"
+          onkeyup="filterProducts()"
+          class="w-full px-5 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-green-500"
+        />
+      </div>
+      
+      <div class="flex gap-3">
+        <select id="categoryFilter" onchange="filterProducts()" 
+                class="px-5 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-green-500">
+          <option value="">All Categories</option>
+          <option value="milk">Milk</option>
+          <option value="curd">Curd</option>
+          <option value="ghee">Ghee & Butter</option>
+          <option value="value_added">Value Added</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="productsGrid">
+      <!-- Products will be loaded dynamically -->
+    </div>
+  </div>
+
+  <script>
+    // All Jeeva Organics Dairy Products
+    let products = [
+      {
+        id: 1,
+        name: "Fresh Cow Milk",
+        price: 60,
+        size: "500 ml",
+        category: "milk",
+        description: "Pure desi cow milk",
+        image: "🥛"
+      },
+      {
+        id: 2,
+        name: "A2 Cow Milk",
+        price: 75,
+        size: "500 ml",
+        category: "milk",
+        description: "Traditional A2 milk from desi cows",
+        image: "🥛"
+      },
+      {
+        id: 3,
+        name: "Buffalo Milk",
+        price: 70,
+        size: "500 ml",
+        category: "milk",
+        description: "Rich & creamy buffalo milk",
+        image: "🥛"
+      },
+      {
+        id: 4,
+        name: "Fresh Curd",
+        price: 50,
+        size: "500 g",
+        category: "curd",
+        description: "Homemade thick curd",
+        image: "🥛"
+      },
+      {
+        id: 5,
+        name: "Pure Desi Ghee",
+        price: 280,
+        size: "250 ml",
+        category: "ghee",
+        description: "Bilona method traditional ghee",
+        image: "🧈"
+      },
+      {
+        id: 6,
+        name: "Fresh Butter",
+        price: 80,
+        size: "200 g",
+        category: "ghee",
+        description: "Pure cream butter",
+        image: "🧈"
+      },
+      {
+        id: 7,
+        name: "Soft Paneer",
+        price: 120,
+        size: "200 g",
+        category: "value_added",
+        description: "Fresh homemade paneer",
+        image: "🧀"
+      },
+      {
+        id: 8,
+        name: "Cold Pressed Coconut Oil",
+        price: 150,
+        size: "250 ml",
+        category: "value_added",
+        description: "100% pure & natural",
+        image: "🥥"
+      },
+      {
+        id: 9,
+        name: "Whole Wheat Chapathi",
+        price: 60,
+        size: "5 pcs",
+        category: "value_added",
+        description: "Soft & fresh chapathis",
+        image: "🫓"
+      }
+    ];
+
+    function renderProducts(filteredProducts) {
+      const container = document.getElementById('productsGrid');
+      container.innerHTML = '';
+
+      filteredProducts.forEach(product => {
+        const card = `
+          <div class="product-card bg-white rounded-2xl overflow-hidden shadow">
+            <div class="h-48 bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center text-7xl">
+              ${product.image}
+            </div>
+            <div class="p-5">
+              <h3 class="font-semibold text-lg text-gray-800">${product.name}</h3>
+              <p class="text-sm text-gray-500">${product.size}</p>
+              <p class="text-gray-600 text-sm mt-2">${product.description}</p>
+              
+              <div class="flex justify-between items-center mt-4">
+                <div>
+                  <span class="text-2xl font-bold text-green-700">₹${product.price}</span>
+                </div>
+                <button onclick="addToCart(${product.id})" 
+                        class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl text-sm font-medium transition">
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        container.innerHTML += card;
+      });
+    }
+
+    function filterProducts() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const category = document.getElementById('categoryFilter').value;
+
+      let filtered = products;
+
+      if (category) {
+        filtered = filtered.filter(p => p.category === category);
+      }
+
+      if (searchTerm) {
+        filtered = filtered.filter(p => 
+          p.name.toLowerCase().includes(searchTerm) || 
+          p.description.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      renderProducts(filtered);
+    }
+
+    // Add to Cart Function
+    function addToCart(productId) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+
+      // For now showing alert (later connect to your backend /cart/add)
+      alert(`${product.name} (${product.size}) added to cart!`);
+      
+      // Update cart count (demo)
+      let count = parseInt(document.getElementById('cartCount').textContent) || 0;
+      document.getElementById('cartCount').textContent = count + 1;
+    }
+
+    function logout() {
+      if (confirm("Are you sure you want to logout?")) {
+        fetch('/logout', { method: 'POST' })
+          .then(() => window.location.href = '/login.html');
+      }
+    }
+
+    // Load all products when page loads
+    window.onload = () => {
+      renderProducts(products);
+    };
+  </script>
+</body>
+</html>

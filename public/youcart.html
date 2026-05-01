@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cart - Jeeva Organics Dairy</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body class="bg-gray-50 min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-green-700 text-white shadow-lg sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <h1 class="text-3xl font-bold">జీవ</h1>
+        <div>
+          <p class="font-semibold text-lg">Jeeva Organics Dairy</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-6 text-sm">
+        <a href="dashboard.html" class="hover:text-green-200">Home</a>
+        <a href="products.html" class="hover:text-green-200">Products</a>
+        <a href="youcart.html" class="text-green-200 font-medium">Cart</a>
+        <a href="#" onclick="logout()" class="hover:text-red-300">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold text-gray-800 mb-2">Your Cart</h1>
+    <p class="text-gray-600 mb-8">Review your selected organic dairy products</p>
+
+    <!-- Cart Items -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Left Side: Cart Items -->
+      <div class="lg:col-span-8">
+        <div id="cartItems" class="space-y-6">
+          <!-- Cart items will be loaded here dynamically -->
+        </div>
+
+        <!-- Empty Cart Message -->
+        <div id="emptyCart" class="hidden text-center py-20">
+          <i class="fas fa-shopping-cart text-8xl text-gray-300 mb-6"></i>
+          <h3 class="text-2xl font-semibold text-gray-400">Your cart is empty</h3>
+          <a href="products.html" class="mt-6 inline-block bg-green-600 text-white px-8 py-3 rounded-xl font-medium">
+            Browse Products
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Side: Order Summary -->
+      <div class="lg:col-span-4">
+        <div class="bg-white rounded-2xl shadow p-6 sticky top-24">
+          <h2 class="text-xl font-semibold mb-6">Order Summary</h2>
+          
+          <div class="space-y-4 text-sm">
+            <div class="flex justify-between">
+              <span class="text-gray-600">Subtotal</span>
+              <span id="subtotal" class="font-medium">₹0</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-gray-600">Delivery Charge</span>
+              <span class="text-green-600">Free</span>
+            </div>
+            <hr>
+            <div class="flex justify-between text-lg font-bold">
+              <span>Total Amount</span>
+              <span id="totalAmount" class="text-green-700">₹0</span>
+            </div>
+          </div>
+
+          <!-- Coupon Section -->
+          <div class="mt-6">
+            <input type="text" id="couponCode" placeholder="Enter coupon code" 
+                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-green-500 text-sm">
+            <button onclick="applyCoupon()" 
+                    class="mt-3 w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-medium">
+              Apply Coupon
+            </button>
+          </div>
+
+          <button onclick="proceedToCheckout()" 
+                  class="mt-8 w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-2xl font-semibold text-lg transition">
+            Proceed to Checkout
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let cart = [];
+
+    // Fetch cart from backend (later connect to your /cart endpoint)
+    async function loadCart() {
+      // For now using sample data (later uncomment below when backend ready)
+      cart = [
+        { id: 1, name: "Fresh Cow Milk", price: 60, size: "500 ml", quantity: 2 },
+        { id: 5, name: "Pure Desi Ghee", price: 280, size: "250 ml", quantity: 1 },
+        { id: 7, name: "Soft Paneer", price: 120, size: "200 g", quantity: 1 }
+      ];
+
+      renderCart();
+    }
+
+    function renderCart() {
+      const container = document.getElementById('cartItems');
+      container.innerHTML = '';
+
+      if (cart.length === 0) {
+        document.getElementById('emptyCart').classList.remove('hidden');
+        updateSummary();
+        return;
+      }
+
+      document.getElementById('emptyCart').classList.add('hidden');
+
+      cart.forEach((item, index) => {
+        const itemHTML = `
+          <div class="bg-white rounded-2xl shadow p-5 flex gap-6">
+            <div class="w-24 h-24 bg-green-100 rounded-xl flex items-center justify-center text-5xl flex-shrink-0">
+              🥛
+            </div>
+            <div class="flex-1">
+              <div class="flex justify-between">
+                <div>
+                  <h3 class="font-semibold text-lg">${item.name}</h3>
+                  <p class="text-gray-500 text-sm">${item.size}</p>
+                </div>
+                <button onclick="removeFromCart(${index})" class="text-red-500 hover:text-red-700">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+              
+              <div class="flex justify-between items-center mt-4">
+                <div class="flex items-center gap-3">
+                  <button onclick="changeQuantity(${index}, -1)" class="w-8 h-8 border rounded-lg hover:bg-gray-100">-</button>
+                  <span class="font-semibold w-6 text-center">${item.quantity}</span>
+                  <button onclick="changeQuantity(${index}, 1)" class="w-8 h-8 border rounded-lg hover:bg-gray-100">+</button>
+                </div>
+                <div class="text-right">
+                  <p class="font-bold text-green-700">₹${item.price * item.quantity}</p>
+                  <p class="text-xs text-gray-500">₹${item.price} each</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        container.innerHTML += itemHTML;
+      });
+
+      updateSummary();
+    }
+
+    function changeQuantity(index, change) {
+      cart[index].quantity += change;
+      if (cart[index].quantity < 1) cart[index].quantity = 1;
+      renderCart();
+    }
+
+    function removeFromCart(index) {
+      if (confirm("Remove this item from cart?")) {
+        cart.splice(index, 1);
+        renderCart();
+      }
+    }
+
+    function updateSummary() {
+      let subtotal = 0;
+      cart.forEach(item => {
+        subtotal += item.price * item.quantity;
+      });
+      document.getElementById('subtotal').textContent = `₹${subtotal}`;
+      document.getElementById('totalAmount').textContent = `₹${subtotal}`;
+    }
+
+    function applyCoupon() {
+      const code = document.getElementById('couponCode').value.trim();
+      if (!code) {
+        alert("Please enter a coupon code");
+        return;
+      }
+      alert("Coupon applied successfully! (Backend integration pending)");
+    }
+
+    function proceedToCheckout() {
+      if (cart.length === 0) {
+        alert("Your cart is empty!");
+        return;
+      }
+      window.location.href = "payment.html";
+    }
+
+    function logout() {
+      if (confirm("Logout?")) {
+        fetch('/logout', { method: 'POST' })
+          .then(() => window.location.href = '/login.html');
+      }
+    }
+
+    // Load cart when page opens
+    window.onload = loadCart;
+  </script>
+</body>
+</html>
